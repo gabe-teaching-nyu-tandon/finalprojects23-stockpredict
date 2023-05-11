@@ -48,3 +48,39 @@ count_df = count_df.where(col('count')>=50).select(col('word'))
 count_df = count_df.withColumn('index', monotonically_increasing_id()+1)
 
 print(f"Number of Words Selected: {count_df.count()}")
+
+# Give the index to each word in our data.
+train_df = train_df.join(count_df, ['word'], 'left').na.drop()
+# Aggregate the indices for each day. "collect_set" function can do this.
+train_df = train_df.groupby('Date').agg(collect_set('index').alias('train'))
+train_df = train_df.withColumnRenamed('Date', 'trainDate')
+# Do the same thing for test set.
+test_df = test_df.join(count_df, ['word'], 'left').na.drop()
+test_df = test_df.groupby('Date').agg(collect_set('index').alias('test'))
+test_df = test_df.withColumnRenamed('Date', 'testDate')
+
+train_df.show(3)
+
+#Prediction
+
+# Since we want to compute the Jaccard Similarity for all train-test pairs, we use "crossJoin".
+merge = train_df.crossJoin(test_df)
+# "array_intersect" and "array_union" are quite similar to set operations in Python.
+# The number of items in intersection divided by the number of items in union is exactly the Jaccard Similarity.
+merge = merge.withColumn('Jaccard', size(array_intersect(col('train'), col('test'))) / size(array_union(col('train'), col('test'))))
+
+from pyspark.sql.window import Window
+
+# Use the Window function and pick the one with highest Jaccard Similarity.
+windowSpec = Window.partitionBy('testDate').orderBy(desc('Jaccard'))
+merge = merge.withColumn('rank', rank().over(windowSpec)).where(col('rank')==1)
+# Concatenate the predicted label and ground truth.
+pred = merge.select(col('trainDate'), col('testDate')).join(label_df, merge['trainDate']==label_df['Date'], 'left')
+pred = pred.withColumnRenamed('Label', 'pred').drop('Date')
+pred = pred.join(label_df, merge['testDate']==label_df['Date'], 'left')
+pred = pred.withColumnRenamed('Label', 'true')
+
+# Finally, check the accuracy.
+acc = pred.where(col('pred')==col('true')).count() / pred.count()
+print(f"Test Accuracy: {acc}")
+
