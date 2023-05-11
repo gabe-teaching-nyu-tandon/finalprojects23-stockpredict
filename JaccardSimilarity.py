@@ -3,12 +3,6 @@
 import os
 import pyspark
 
-#conf = pyspark.SparkConf()
-#conf.set('spark.ui.proxyBase', '/user/' + os.environ['JUPYTERHUB_USER'] + '/proxy/4041')
-#conf.set('spark.sql.repl.eagerEval.enabled', True)
-#conf.set('spark.driver.memory', '4g')
-#sc = pyspark.SparkContext(conf=conf)
-#spark = pyspark.SQLContext.getOrCreate(sc)
 
 conf = pyspark.SparkConf()
 
