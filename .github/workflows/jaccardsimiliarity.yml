@@ -3,10 +3,10 @@ name: JaccardSimiliarity CI
 on:
   push:
     branches:
-      - jash-jaccard
+      - jash-jaccardsimiliarity
   pull_request:
     branches:
-      - jash-jaccard
+      - jash-jaccardsimiliarity
 
 jobs:
   build:
