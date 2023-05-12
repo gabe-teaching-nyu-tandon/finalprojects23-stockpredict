@@ -1,0 +1,28 @@
+name: JaccardSimiliarity CI
+
+on:
+  push:
+    branches:
+      - jash-jaccard
+  pull_request:
+    branches:
+      - jash-jaccard
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install pyspark 
+
+      - name: Run Python script
+        run: python JaccardSimilarity.py
