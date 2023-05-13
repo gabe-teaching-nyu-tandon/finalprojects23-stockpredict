@@ -43,7 +43,7 @@ data_df.show(3)
 # In[ ]:
 
 def count_based_algo(data_df):
-    from pyspark.sql.functions import *
+    from pyspark.sql.functions import col, lower, regexp_replace
     # Concatenate all the news headlines into column "News" for each day.
     data_df = data_df.withColumn('News', col('Top1'))
     for i in range(1, 26):
