@@ -1,0 +1,33 @@
+name: CountBased CI
+
+on:
+  push:
+    branches:
+      - jiazhao-countbased
+  pull_request:
+    branches:
+      - jiazhao-countbased
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install notebook
+          pip install nbconvert
+          pip install pyspark 
+
+      - name: Execute Jupyter notebook
+        run: |
+          jupyter nbconvert --to script --execute CountBased.ipynb
