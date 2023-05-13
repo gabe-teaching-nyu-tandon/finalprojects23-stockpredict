@@ -24,7 +24,7 @@ def count_based_algo(news_data):
 
     # In[ ]:
 
-    from pyspark.sql.functions import col, lower, regexp_replace, to_date, concat_ws, split, trim, explode
+    from pyspark.sql.functions import col, lower, regexp_replace, to_date, concat_ws, split, trim, explode, udf
 
     data_df = spark.read.format('csv').option('inferSchema','true').option('header','true').load(news_data)
     data_df = data_df.withColumn('Date', to_date('Date'))
