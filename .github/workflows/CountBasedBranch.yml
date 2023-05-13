@@ -27,6 +27,9 @@ jobs:
           pip install notebook
           pip install nbconvert
           pip install pyspark 
+          
+      - name: Run tests
+        run: npm test
 
       - name: Execute Jupyter notebook
         run: |
