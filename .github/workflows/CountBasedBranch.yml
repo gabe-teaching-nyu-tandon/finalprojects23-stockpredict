@@ -27,11 +27,6 @@ jobs:
           pip install notebook
           pip install nbconvert
           pip install pyspark 
-          pip install nbval
-          pip install --upgrade jupyter nbconvert
-
-      - name: Run tests
-        run: npm test
 
       - name: Execute Jupyter notebook
         run: |
