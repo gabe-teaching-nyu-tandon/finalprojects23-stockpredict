@@ -28,6 +28,5 @@ jobs:
           pip install nbconvert
           pip install pyspark 
 
-      - name: Execute Jupyter notebook
-        run: |
-          jupyter nbconvert --to script --execute CountBased.py
+      - name: Run Python script
+        run: python CountBased.py
