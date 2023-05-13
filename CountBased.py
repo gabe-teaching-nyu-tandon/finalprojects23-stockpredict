@@ -9,9 +9,10 @@
 # In[1]:
 
 
-import os
-import pyspark
+
 def count_based_algo(news_data):
+    import os
+    import pyspark
     conf = pyspark.SparkConf()
     #conf.set('spark.ui.proxyBase', '/user/' + os.environ['JUPYTERHUB_USER'] + '/proxy/4041')
     conf.set('spark.sql.repl.eagerEval.enabled', True)
@@ -23,7 +24,7 @@ def count_based_algo(news_data):
     # In[ ]:
 
     from pyspark.sql.functions import col, lower, regexp_replace
-    
+
     data_df = spark.read.format('csv').option('inferSchema','true').option('header','true').load(news_data)
     data_df = data_df.withColumn('Date', to_date('Date'))
 
