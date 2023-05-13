@@ -27,6 +27,7 @@ jobs:
           pip install notebook
           pip install nbconvert
           pip install pyspark 
+          pip install nbval
           
       - name: Run tests
         run: npm test
