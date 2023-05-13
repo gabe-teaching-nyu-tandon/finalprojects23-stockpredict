@@ -2,9 +2,9 @@ name: Testing Jaccard CI
 
 on:
   push:
-    branches: [jash-jaccard]
+    branches: [jash-jaccardsimiliarity]
   pull_request:
-    branches: [jash-jaccard]
+    branches: [jash-jaccardsimiliarity]
 
 jobs:
   test:
