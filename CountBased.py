@@ -11,39 +11,36 @@
 
 import os
 import pyspark
-
-conf = pyspark.SparkConf()
-#conf.set('spark.ui.proxyBase', '/user/' + os.environ['JUPYTERHUB_USER'] + '/proxy/4041')
-conf.set('spark.sql.repl.eagerEval.enabled', True)
-conf.set('spark.driver.memory', '4g')
-sc = pyspark.SparkContext(conf=conf)
-spark = pyspark.SQLContext.getOrCreate(sc)
-
-
-# In[ ]:
+def count_based_algo(news_data):
+    conf = pyspark.SparkConf()
+    #conf.set('spark.ui.proxyBase', '/user/' + os.environ['JUPYTERHUB_USER'] + '/proxy/4041')
+    conf.set('spark.sql.repl.eagerEval.enabled', True)
+    conf.set('spark.driver.memory', '4g')
+    sc = pyspark.SparkContext(conf=conf)
+    spark = pyspark.SQLContext.getOrCreate(sc)
 
 
-from pyspark.sql.functions import *
+    # In[ ]:
 
-news_data = 'Combined_News_DJIA.csv'
-data_df = spark.read.format('csv').option('inferSchema','true').option('header','true').load(news_data)
-data_df = data_df.withColumn('Date', to_date('Date'))
-
-
-# In[ ]:
-
-
-data_df.show(3)
-
-
-# For each day, we have label and 25 news headlines. The label is 1 if the DJIA (Dow Jones Industrial Average) daily return is plus, and 0 if minus.
-
-# ## 2. Preprocessing, Computing the Score for Each Frequent Word.
-
-# In[ ]:
-
-def count_based_algo(data_df):
     from pyspark.sql.functions import col, lower, regexp_replace
+    
+    data_df = spark.read.format('csv').option('inferSchema','true').option('header','true').load(news_data)
+    data_df = data_df.withColumn('Date', to_date('Date'))
+
+
+    # In[ ]:
+
+
+    data_df.show(3)
+
+
+    # For each day, we have label and 25 news headlines. The label is 1 if the DJIA (Dow Jones Industrial Average) daily return is plus, and 0 if minus.
+
+    # ## 2. Preprocessing, Computing the Score for Each Frequent Word.
+
+    # In[ ]:
+
+    
     # Concatenate all the news headlines into column "News" for each day.
     data_df = data_df.withColumn('News', col('Top1'))
     for i in range(1, 26):
@@ -166,7 +163,7 @@ def count_based_algo(data_df):
 
 # In[ ]:
 
-count_based_algo(data_df)
+count_based_algo('Combined_News_DJIA.csv')
 
 
 
