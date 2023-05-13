@@ -1,0 +1,15 @@
+{
+  "name": "countbased",
+  "version": "1.0.0",
+  "description": "Count-Based Algorithm Project",
+  "scripts": {
+    "test": "nbval countbased.ipynb",
+    "start": "jupyter notebook countbased.ipynb"
+  },
+  "devDependencies": {
+    "nbval": "^0.9.6"
+  },
+  "dependencies": {
+    "jupyter": "^1.0.0"
+  }
+}
