@@ -30,4 +30,4 @@ jobs:
 
       - name: Execute Jupyter notebook
         run: |
-          jupyter nbconvert --to script --execute CountBased.ipynb
+          jupyter nbconvert --to script --execute CountBased.py
