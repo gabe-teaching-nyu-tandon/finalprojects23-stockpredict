@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - jash-jaccardsimiliarity
+      - main
   pull_request:
     branches:
       - jash-jaccardsimiliarity
+      - main
 
 jobs:
   build:
