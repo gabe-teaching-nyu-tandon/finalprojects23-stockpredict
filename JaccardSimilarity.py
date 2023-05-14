@@ -84,6 +84,7 @@ pred = pred.withColumnRenamed('Label', 'true')
 acc = pred.where(col('pred')==col('true')).count() / pred.count()
 print(f"Test Accuracy: {acc}")
 
+print(f"Test Accuracy: {acc}")
 
 
 
