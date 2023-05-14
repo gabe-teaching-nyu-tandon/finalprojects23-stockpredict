@@ -27,6 +27,10 @@ jobs:
           pip install notebook
           pip install nbconvert
           pip install pyspark 
-
+          pip install pytest
+      
       - name: Run Python script
         run: python CountBased.py
+        
+      - name: Run Test
+        run: python test_CountBased.py
