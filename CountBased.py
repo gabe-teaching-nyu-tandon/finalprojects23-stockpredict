@@ -12,13 +12,14 @@
 
 def count_based_algo(news_data):
     import os
+    from pyspark import SparkContext
     import pyspark
 
-    conf = pyspark.SparkConf()
-    #conf.set('spark.ui.proxyBase', '/user/' + os.environ['JUPYTERHUB_USER'] + '/proxy/4041')
-    conf.set('spark.sql.repl.eagerEval.enabled', True)
-    conf.set('spark.driver.memory', '4g')
-    sc = pyspark.SparkContext(conf=conf)
+    # conf = pyspark.SparkConf()
+    # #conf.set('spark.ui.proxyBase', '/user/' + os.environ['JUPYTERHUB_USER'] + '/proxy/4041')
+    # conf.set('spark.sql.repl.eagerEval.enabled', True)
+    # conf.set('spark.driver.memory', '4g')
+    sc = SparkContext.getOrCreate()
     spark = pyspark.SQLContext.getOrCreate(sc)
 
 
