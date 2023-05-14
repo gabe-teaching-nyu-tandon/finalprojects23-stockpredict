@@ -91,11 +91,6 @@ The CreateRedditDataset interface will manage the collection and initial preproc
 The JaccardSimilarity interface will be responsible for implementing the Jaccard Similarity Search, which measures the similarity between text data points based on their shared words. This interface will take preprocessed text data as input and return similarity scores between data points.
 
 
-
-### **LocalitySensitiveHashing**:
-
-The LocalitySensitiveHashing interface will implement the Locality Sensitive Hashing technique, which is used to efficiently find approximate nearest neighbors in high-dimensional spaces. This interface will be utilized in the Jaccard Similarity Search to quickly find similar data points, reducing the computational complexity of the search.
-
 ### **ML-Based Approach**:
 
 Several Machine Learning algorithms will be implemented to load the data, pre-process it, apply various transformations, train/test/validate, evaluate and compare the results (accuracies). 
