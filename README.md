@@ -31,7 +31,7 @@ This command will generate the HTML output in the `build/html` directory.
 
 5. To generate a PDF version of the documentation, run the following command: make pdf
 
-This command will convert the source files to a PDF format using rst2pdf. The resulting PDF file will be available in the `build/latex` directory.
+This command will convert the source files to a PDF format. The resulting PDF file will be available in the `build/latex` directory.
 
 ## Accessing the Documentation
 6. To access and view the generated documentation:
