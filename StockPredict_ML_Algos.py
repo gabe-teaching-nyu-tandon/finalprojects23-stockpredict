@@ -69,3 +69,77 @@ df2.filter(df2.date_stock == "2022-05-04") \
     .show(truncate=False)
 df2= df2.withColumn("SP500", when(df2["SP500"]>0,1).otherwise(0))
 df2= df2.withColumnRenamed("SP500","label")
+
+
+stages = []
+
+regexTokenizer = RegexTokenizer(inputCol="comment", outputCol="tokens", pattern="\\W+")
+stages += [regexTokenizer]
+
+swr = StopWordsRemover(inputCol="tokens", outputCol="Comments")
+stages += [swr]
+
+cv = CountVectorizer(inputCol="Comments", outputCol="token_features", minDF=2.0)#, vocabSize=3, minDF=2.0
+stages += [cv]
+
+
+vecAssembler = VectorAssembler(inputCols=['token_features'], outputCol="features")
+stages += [vecAssembler]
+
+[print('\n', stage) for stage in stages]
+
+pipeline = Pipeline(stages=stages)
+data = pipeline.fit(df2).transform(df2)
+
+train, test = data.randomSplit([0.7, 0.3])
+
+nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
+model = nb.fit(train)
+
+predictions = model.transform(test)
+# Select results to view
+predictions.limit(20).select("label", "prediction", "probability").show(truncate=False)
+
+evaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
+nbaccuracy = evaluator.evaluate(predictions)
+print ("Test Area Under ROC: ", nbaccuracy)
+
+
+
+# Create ParamGrid and Evaluator for Cross Validation
+paramGrid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0]).build()
+cvEvaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
+# Run Cross-validation
+cv = CrossValidator(estimator=nb, estimatorParamMaps=paramGrid, evaluator=cvEvaluator)
+cvModel = cv.fit(train)
+# Make predictions on testData. cvModel uses the bestModel.
+cvPredictions = cvModel.transform(test)
+# Evaluate bestModel found from Cross Validation
+evaluator.evaluate(cvPredictions)
+
+
+
+# Make predictions on testData. cvModel uses the bestModel.
+cvPredictions = cvModel.transform(test)
+# Evaluate bestModel found from Cross Validation
+print ("Test Area Under ROC: ", evaluator.evaluate(cvPredictions))
+
+log_reg = LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8)
+model2 = log_reg.fit(train)
+predictions = model2.transform(test)
+
+evaluator = BinaryClassificationEvaluator().setLabelCol('label').setRawPredictionCol('prediction').setMetricName('areaUnderROC')
+lgaccuracy = evaluator.evaluate(predictions)
+print(lgaccuracy)
+
+# Create ParamGrid and Evaluator for Cross Validation
+paramGrid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0]).build()
+cvEvaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
+# Run Cross-validation
+cv = CrossValidator(estimator=log_reg, estimatorParamMaps=paramGrid, evaluator=cvEvaluator)
+cvModel = cv.fit(train)
+# Make predictions on testData. cvModel uses the bestModel.
+cvPredictions = cvModel.transform(test)
+# Evaluate bestModel found from Cross Validation
+evaluator.evaluate(cvPredictions)
+
