@@ -1,3 +1,6 @@
+import cProfile
+import pstats
+
 def count_based_algo(news_data):
     import os
     from pyspark import SparkContext
@@ -170,6 +173,7 @@ if __name__ == '__main__':
     stats = pstats.Stats(profiler)
     stats.sort_stats(pstats.SortKey.TIME)  # Sort the results by time
     stats.print_stats()
+
 
 
 
