@@ -1,3 +1,4 @@
+
 def count_based_algo(news_data):
     import os
     from pyspark import SparkContext
@@ -155,21 +156,8 @@ def count_based_algo(news_data):
 
 
 # In[ ]:
-if __name__ == '__main__':
-    # Run the code profiler
-    profiler = cProfile.Profile()
-    profiler.enable()
 
-    # Call the function to profile
-    count_based_algo('Combined_News_DJIA.csv')
-
-    # Stop the profiler
-    profiler.disable()
-
-    # Print the profiling results
-    stats = pstats.Stats(profiler)
-    stats.sort_stats(pstats.SortKey.TIME)  # Sort the results by time
-    stats.print_stats()
+count_based_algo('Combined_News_DJIA.csv')
 
 
 
