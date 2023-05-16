@@ -1,3 +1,5 @@
+#Import required libraries for the project
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lower, udf, concat_ws, concat, to_date, collect_list, translate, regexp_replace, when
 from pyspark.sql.types import BooleanType, StringType
@@ -14,21 +16,23 @@ from pyspark.ml.tuning import ParamGridBuilder, CrossValidator
 import matplotlib.pyplot as plt
 import numpy as np
 
+#Instantiate a Spark Session
 spark = SparkSession.builder.appName('SentimentAnalyzer').getOrCreate()
 
-# Load data and rename column
+# Load data
 df = spark.read.format("csv")\
     .option("header", "true")\
     .option("inferSchema", "true")\
     .option("multiLine", "true")\
     .option("delimiter", "¥")\
-    .load("data/reddit-data.csv")\
+    .load("/Users/mallenesha/SESCProject/group_git_sandbox-stockpredict/StockPredict_Data.csv")\
     .coalesce(5)
 
 
 #Preprocessing
 
 df = df.withColumn('comment', lower(col('comment')))
+
 
 # filter to see if title column contains any keyword from keywords
 keywords = ["SP500" , "S&P500"]
@@ -70,6 +74,7 @@ df2.filter(df2.date_stock == "2022-05-04") \
 df2= df2.withColumn("SP500", when(df2["SP500"]>0,1).otherwise(0))
 df2= df2.withColumnRenamed("SP500","label")
 
+#Spark ML pipeline setup
 
 stages = []
 
@@ -88,11 +93,15 @@ stages += [vecAssembler]
 
 [print('\n', stage) for stage in stages]
 
+
+#Training and testing models
+#Pipeline Fitting:
 pipeline = Pipeline(stages=stages)
 data = pipeline.fit(df2).transform(df2)
 
 train, test = data.randomSplit([0.7, 0.3])
 
+#Naive Bayes Implementation
 nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
 model = nb.fit(train)
 
@@ -104,7 +113,7 @@ evaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
 nbaccuracy = evaluator.evaluate(predictions)
 print ("Test Area Under ROC: ", nbaccuracy)
 
-
+#Cross Validation Evaluation for Naive Bayes Model:
 
 # Create ParamGrid and Evaluator for Cross Validation
 paramGrid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0]).build()
@@ -124,6 +133,7 @@ cvPredictions = cvModel.transform(test)
 # Evaluate bestModel found from Cross Validation
 print ("Test Area Under ROC: ", evaluator.evaluate(cvPredictions))
 
+#Logistic regression Model:
 log_reg = LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8)
 model2 = log_reg.fit(train)
 predictions = model2.transform(test)
@@ -132,6 +142,8 @@ evaluator = BinaryClassificationEvaluator().setLabelCol('label').setRawPredictio
 lgaccuracy = evaluator.evaluate(predictions)
 print(lgaccuracy)
 
+
+#Cross Validation Evaluation for logistic Rergression Model
 # Create ParamGrid and Evaluator for Cross Validation
 paramGrid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0]).build()
 cvEvaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
@@ -143,3 +155,76 @@ cvPredictions = cvModel.transform(test)
 # Evaluate bestModel found from Cross Validation
 evaluator.evaluate(cvPredictions)
 
+#Random Forest Classifier Model:
+rf = RandomForestClassifier().setLabelCol('label').setFeaturesCol('features').setNumTrees(10)
+model = rf.fit(train)
+predictions = model.transform(test)
+
+evaluator = BinaryClassificationEvaluator().setLabelCol('label').setRawPredictionCol('prediction').setMetricName("areaUnderROC")
+rfaccuracy = evaluator.evaluate(predictions)
+print(rfaccuracy)
+
+
+#Cross Validation Evaluation for Randon Forest Classifier Model
+# Create ParamGrid and Evaluator for Cross Validation
+paramGrid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0]).build()
+cvEvaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
+# Run Cross-validation
+cv = CrossValidator(estimator=rf, estimatorParamMaps=paramGrid, evaluator=cvEvaluator)
+cvModel = cv.fit(train)
+# Make predictions on testData. cvModel uses the bestModel.
+cvPredictions = cvModel.transform(test)
+# Evaluate bestModel found from Cross Validation
+evaluator.evaluate(cvPredictions)
+
+#Decision Tree Classifier Model:
+dt = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
+dtModel = dt.fit(train)
+predictions = dtModel.transform(test)
+
+evaluator = BinaryClassificationEvaluator().setRawPredictionCol('prediction')
+#evaluator = BinaryClassificationEvaluator(labelCol="label", featuresCol="features", maxDepth=2)
+dtAccuracy = evaluator.evaluate(predictions)
+print(dtAccuracy) 
+
+
+#Cross Validation Evaluation for Decision Tree Clasifier
+# Create ParamGrid and Evaluator for Cross Validation
+paramGrid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0]).build()
+cvEvaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
+# Run Cross-validation
+cv = CrossValidator(estimator=dt, estimatorParamMaps=paramGrid, evaluator=cvEvaluator)
+cvModel = cv.fit(train)
+# Make predictions on testData. cvModel uses the bestModel.
+cvPredictions = cvModel.transform(test)
+# Evaluate bestModel found from Cross Validation
+evaluator.evaluate(cvPredictions)
+
+#Support Vector Classifier Model:
+# Define your classifier
+lsvc = LinearSVC(maxIter=10, regParam=0.1)
+
+# Fit the model
+lsvcModel = lsvc.fit(train)
+
+# Compute predictions for test data
+predictions = lsvcModel.transform(test)
+
+# Define the evaluator method with the corresponding metric and compute the classification error on test data
+evaluator = BinaryClassificationEvaluator().setRawPredictionCol('prediction')
+svmaccuracy = evaluator.evaluate(predictions) 
+
+# Show the accuracy
+print("Test accuracy = %g" % (svmaccuracy))
+
+#Cross Validation Evaluation of Support Vector Classifier
+# Create ParamGrid and Evaluator for Cross Validation
+paramGrid = ParamGridBuilder().addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0]).build()
+cvEvaluator = BinaryClassificationEvaluator(rawPredictionCol="prediction")
+# Run Cross-validation
+cv = CrossValidator(estimator=lsvc, estimatorParamMaps=paramGrid, evaluator=cvEvaluator)
+cvModel = cv.fit(train)
+# Make predictions on testData. cvModel uses the bestModel.
+cvPredictions = cvModel.transform(test)
+# Evaluate bestModel found from Cross Validation
+evaluator.evaluate(cvPredictions)
