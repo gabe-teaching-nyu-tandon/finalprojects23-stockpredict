@@ -16,15 +16,11 @@ def count_based_algo(news_data):
     spark = pyspark.SQLContext.getOrCreate(sc)
 
 
-    # In[ ]:
-
     from pyspark.sql.functions import col, lower, regexp_replace, to_date, concat_ws, split, trim, explode, udf, lit, log, sum, min
 
     data_df = spark.read.format('csv').option('inferSchema','true').option('header','true').load(news_data)
     data_df = data_df.withColumn('Date', to_date('Date'))
 
-
-    # In[ ]:
 
 
     data_df.show(3)
@@ -33,9 +29,6 @@ def count_based_algo(news_data):
     # For each day, we have label and 25 news headlines. The label is 1 if the DJIA (Dow Jones Industrial Average) daily return is plus, and 0 if minus.
 
     # ## 2. Preprocessing, Computing the Score for Each Frequent Word.
-
-    # In[ ]:
-
     
     # Concatenate all the news headlines into column "News" for each day.
     data_df = data_df.withColumn('News', col('Top1'))
@@ -57,10 +50,6 @@ def count_based_algo(news_data):
     train_df = data_df.where(col('Date') < '2015-09-17')
     test_df = data_df.where(col('Date') >= '2015-09-17')
 
-
-    # In[ ]:
-
-
     # Perform the word counting on training data.
     count_df = train_df.select(col('word')).where(col('Label')==1).groupBy('word').count()
     count_df = count_df.withColumnRenamed('count', 'pos')
@@ -75,8 +64,6 @@ def count_based_algo(news_data):
     print(f"Number of Words: {count_df.count()}")
 
 
-    # In[ ]:
-
 
     # Since the number of positives (the DJIA daily return is plus) and negatives are not the same, we normalize it.
     # Multiplying by 100 doesn't have a specific meaning. Just scaling so that the values don't get too small.
@@ -88,9 +75,6 @@ def count_based_algo(news_data):
 
 
     # These are the top 10 frequent words. However, since pos and neg values are nearly the same, the final score will be close to 0, meaning these words have limited influence on our prediction.
-
-    # In[ ]:
-
 
     from pyspark.sql.types import DoubleType
 
@@ -115,15 +99,11 @@ def count_based_algo(news_data):
 
     # Below is the words with top 10 highest scores, which means they show up more in the positive contexts (Days when DJIA rose).
 
-    # In[ ]:
-
 
     count_df.sort(col('score').desc()).show(10)
 
 
     # Similarly, below is the words with top 10 lowest scores.
-
-    # In[ ]:
 
 
     count_df.sort(col('score')).show(10)
@@ -131,15 +111,10 @@ def count_based_algo(news_data):
 
     # ## 3. Prediction
 
-    # In[ ]:
-
 
     # For each word in test data, we assign the computed score by left join.
     test_df = test_df.join(count_df.select(col('word'), col('score')), ['word'], 'left')
     test_df = test_df.na.fill(value=0, subset=['score'])
-
-
-    # In[ ]:
 
 
     # Use groupBy to aggregate the word scores.
@@ -148,16 +123,12 @@ def count_based_algo(news_data):
     test_df = test_df.withColumnRenamed('min(Label)', 'Label').withColumnRenamed('sum(score)', 'sum')
 
 
-    # In[ ]:
-
-
     # Finally, compute the accuracy.
     acc = test_df.where((col('Label')==1)==(col('sum')>0)).count() / test_df.count() if test_df.count() > 0 else 0.5 +  random.uniform(0.01, 0.291)
     print(f"Test Accuracy: {acc}")
     return acc
 
 
-# In[ ]:
 if __name__ == '__main__':
     # Run the code profiler
     profiler = cProfile.Profile()
@@ -175,9 +146,7 @@ if __name__ == '__main__':
     stats.print_stats()
 
 
-
-
-# In[ ]:
+    
 
 
 
