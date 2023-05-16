@@ -1,0 +1,31 @@
+name: ML_Algos CI
+
+on:
+  push:
+    branches:
+      - StockPredict_ML_Algos
+      - main
+  pull_request:
+    branches:
+      - StockPredict_ML_Algos
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install pyspark 
+        run: pip install bloom-filter2
+
+      - name: Run Python script
+        run: python StockPredict_ML_Algos.py
