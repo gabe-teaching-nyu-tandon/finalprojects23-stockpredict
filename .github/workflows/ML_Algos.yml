@@ -26,6 +26,7 @@ jobs:
       - name: Install dependencies
         run: pip install pyspark 
         run: pip install bloom-filter2
+        run: pip install pytest
 
       - name: Run Python script
         run: python StockPredict_ML_Algos.py
